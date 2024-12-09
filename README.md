@@ -1,75 +1,72 @@
-# Nuxt Minimal Starter
+# 🍴 Tium Recipes
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Tium Recipes is a web application designed for food enthusiasts to discover, create, and share recipes. The project combines a user-friendly interface with a robust backend powered by GraphQL, making it seamless to manage recipe data and deliver an engaging user experience.
 
-## Setup
+---
 
-Make sure to install dependencies:
+## 📚 Features
 
-```bash
-# npm
-npm install
+### 🌟 Core Functionality:
+- **Recipe Creation**: Users can create new recipes by providing a title, images, ingredients, and directions.  
+- **Recipe Browsing**: View all recipes categorized by meals like Breakfast, Lunch, Dinner, and Snacks.  
+- **Search & Filter**: Search for recipes by title or filter by category and preparation time.  
+- **Rating System**: Each recipe displays its average rating and the total number of ratings.  
 
-# pnpm
-pnpm install
+### 🔧 Technical Highlights:
+- **Frontend**: Built with Vue.js for a dynamic and responsive UI.  
+- **Backend**: Powered by a GraphQL server using Apollo Server, providing a scalable and efficient API.  
+- **File Uploads**: Supports image uploads for featured and additional images.  
+- **State Management**: Utilizes Vue Apollo Composable for efficient GraphQL mutations and queries.  
+- **Deployment**: The project is hosted on Netlify, enabling fast and reliable delivery of the application.
 
-# yarn
-yarn install
+---
 
-# bun
-bun install
-```
+## 🚀 Tech Stack
 
-## Development Server
+- **Frontend**: Vue.js, TailwindCSS, Nuxt.js.  
+- **Backend**: Node.js, Apollo Server, GraphQL  
+- **Database**: In-memory database for testing (e.g., sample data in `server.js`)  
+- **Hosting**: Netlify  
 
-Start the development server on `http://localhost:3000`:
+---
 
-```bash
-# npm
-npm run dev
+## 🛠️ Setup Instructions
 
-# pnpm
-pnpm dev
+### Prerequisites
+Ensure you have the following installed:
+- **Node.js** (v14 or higher)
+- **NPM** or **Yarn**
+- **Netlify CLI** (for deployment, optional)
 
-# yarn
-yarn dev
+### Installation
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/yourusername/Tium_Recipes.git
+   cd Tium_Recipes
+   ```
 
-# bun
-bun run dev
-```
+2. **Install Dependencies**:
+   Navigate to the frontend and backend directories to install dependencies:
+   ```bash
+   # Frontend
+   cd Tium_Recipes
+   npm install
 
-## Production
+   # Backend
+   cd graphql-server
+   npm install
+   ```
 
-Build the application for production:
+3. **Run the Development Server**:
+   - Start the GraphQL server:
+     ```bash
+     node server.js
+     ```
+   - Start the frontend development server:
+     ```bash
+     npm run dev
+     ```
 
-```bash
-# npm
-npm run build
+4. **Access the Application**:
+   Open your browser and navigate to `http://localhost:3000` to view the application.
 
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
