@@ -1,10 +1,8 @@
 export default defineNuxtConfig({
-  ssr: true, // Enable server-side rendering
+  ssr: true,
   modules: ['@nuxtjs/tailwindcss'],
   plugins: ['~/plugins/apollo-client.js'],
-
   css: ['@/assets/css/base.css'],
-
   app: {
     head: {
       title: 'Tium Recipes',
@@ -14,5 +12,8 @@ export default defineNuxtConfig({
         { hid: 'description', name: 'description', content: 'Delicious food recipes' },
       ],
     },
+  },
+  nitro: {
+    preset: 'netlify', // Add this line for Netlify SSR support
   },
 });
