@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="recipe-card bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300"
-  >
+  <div class="recipe-card bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
     <!-- Featured Image -->
     <div class="recipe-image relative">
       <img
@@ -20,23 +18,16 @@
 
     <!-- Recipe Info -->
     <div class="p-4">
-      <!-- Title -->
       <h3 class="text-lg font-bold text-gray-800 truncate mb-2 hover:text-blue-600 transition-colors">
         {{ recipe.title }}
       </h3>
-
-      <!-- Description -->
       <p class="text-sm text-gray-700 mb-4">
         {{ recipe.description || "No description available." }}
       </p>
-
-      <!-- Preparation Time -->
       <p class="text-sm text-gray-600 mb-2 flex items-center">
         <span class="material-icons text-blue-500 mr-1">schedule</span>
         ⏱ {{ recipe.preparation_time || "N/A" }} minutes
       </p>
-
-      <!-- Ratings -->
       <div class="mt-3 flex items-center">
         <div v-for="n in 5" :key="n" class="text-yellow-500">
           <span v-if="n <= recipe.average_rating">★</span>
@@ -46,13 +37,13 @@
           ({{ recipe.ratings_count || 0 }} ratings)
         </span>
       </div>
+      <p class="text-sm text-gray-600 mt-4">
+        Created by: <span class="text-blue-500 font-semibold">{{ recipe.creator }}</span>
+      </p>
     </div>
 
     <!-- Additional Images -->
-    <div
-      v-if="recipe.additional_images?.length"
-      class="p-4 bg-gray-50 border-t border-gray-200"
-    >
+    <div v-if="recipe.additional_images?.length" class="p-4 bg-gray-50 border-t border-gray-200">
       <h4 class="text-md font-semibold text-gray-800 mb-2">Additional Images:</h4>
       <div class="grid grid-cols-2 gap-2">
         <img
@@ -76,13 +67,8 @@
           ({{ showIngredients ? "Hide" : "Show" }})
         </span>
       </h4>
-      <ul
-        v-if="showIngredients"
-        class="list-disc list-inside text-sm text-gray-600"
-      >
-        <li v-for="(ingredient, index) in recipe.ingredients" :key="index">
-          {{ ingredient }}
-        </li>
+      <ul v-if="showIngredients" class="list-disc list-inside text-sm text-gray-600">
+        <li v-for="(ingredient, index) in recipe.ingredients" :key="index">{{ ingredient }}</li>
       </ul>
     </div>
 
@@ -97,41 +83,56 @@
           ({{ showDirections ? "Hide" : "Show" }})
         </span>
       </h4>
-      <ol
-        v-if="showDirections"
-        class="list-decimal list-inside text-sm text-gray-600"
-      >
-        <li v-for="(step, index) in recipe.directions" :key="index">
-          {{ step }}
-        </li>
+      <ol v-if="showDirections" class="list-decimal list-inside text-sm text-gray-600">
+        <li v-for="(step, index) in recipe.directions" :key="index">{{ step }}</li>
       </ol>
     </div>
 
     <!-- Footer with Actions -->
     <div class="p-4 bg-gray-100 border-t border-gray-200 flex justify-between items-center">
-      <!-- Like Button -->
       <button
-        @click="toggleLike"
+        @click="likeRecipe"
         class="flex items-center text-sm text-red-500 hover:text-red-600 transition"
       >
         <span v-if="isLiked">♥</span>
         <span v-else>♡</span>
-        <span class="ml-1">{{ recipe.likes_count || 0 }}</span>
+        <span class="ml-1">{{ recipe.likes.length }}</span>
       </button>
-
-      <!-- Bookmark Button -->
       <button
-        @click="toggleBookmark"
+        @click="bookmarkRecipe"
         class="flex items-center text-sm text-yellow-500 hover:text-yellow-600 transition"
       >
         <span v-if="isBookmarked">🔖</span>
         <span v-else>📑</span>
+        <span class="ml-1">{{ recipe.bookmarks.length }}</span>
       </button>
     </div>
   </div>
 </template>
 
 <script>
+import { useMutation } from "@vue/apollo-composable";
+import gql from "graphql-tag";
+
+const LIKE_RECIPE = gql`
+  mutation LikeRecipe($recipeId: ID!, $userId: String!) {
+    likeRecipe(recipeId: $recipeId, userId: $userId) {
+      id
+      likes
+    }
+  }
+`;
+
+const BOOKMARK_RECIPE = gql`
+  mutation BookmarkRecipe($recipeId: ID!, $userId: String!) {
+    bookmarkRecipe(recipeId: $recipeId, userId: $userId) {
+      id
+      bookmarks
+    }
+  }
+`;
+
+
 export default {
   name: "RecipeCard",
   props: {
@@ -139,27 +140,35 @@ export default {
       type: Object,
       required: true,
     },
-    isLiked: {
-      type: Boolean,
-      default: false,
-    },
-    isBookmarked: {
-      type: Boolean,
-      default: false,
+    currentUserId: {
+      type: String,
+      required: true,
     },
   },
   data() {
     return {
-      showIngredients: false,
+      isLiked: this.recipe.likes.includes(this.currentUserId),
+      isBookmarked: this.recipe.bookmarks.includes(this.currentUserId),
+      showIngredients: false, 
       showDirections: false,
     };
   },
   methods: {
-    toggleLike() {
-      this.$emit("like", this.recipe.id);
+    likeRecipe() {
+      const { mutate: likeMutation } = useMutation(LIKE_RECIPE, {
+        variables: { recipeId: this.recipe.id, userId: this.currentUserId },
+      });
+      likeMutation().then(({ data }) => {
+        this.isLiked = data.likeRecipe.likes.includes(this.currentUserId);
+      });
     },
-    toggleBookmark() {
-      this.$emit("bookmark", this.recipe.id);
+    bookmarkRecipe() {
+      const { mutate: bookmarkMutation } = useMutation(BOOKMARK_RECIPE, {
+        variables: { recipeId: this.recipe.id, userId: this.currentUserId },
+      });
+      bookmarkMutation().then(({ data }) => {
+        this.isBookmarked = data.bookmarkRecipe.bookmarks.includes(this.currentUserId);
+      });
     },
     toggleIngredients() {
       this.showIngredients = !this.showIngredients;
@@ -189,4 +198,6 @@ export default {
 .recipe-card h3:hover {
   text-decoration: underline;
 }
+
+
 </style>

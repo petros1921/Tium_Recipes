@@ -223,15 +223,30 @@ export default {
       return file && allowedTypes.includes(file.type);
     };
 
-    const uploadFeaturedImage = (event) => {
-      const file = event.target.files[0];
-      if (file && isValidImage(file)) {
-        featuredImage.value = URL.createObjectURL(file);
-      } else {
-        alert("Please upload a valid image.");
-        event.target.value = '';
-      }
-    };
+    const uploadFeaturedImage = async (event) => {
+        const file = event.target.files[0];
+        if (file && isValidImage(file)) {
+          try {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", "your_upload_preset"); // Cloudinary preset
+
+            const response = await fetch("https://api.cloudinary.com/v1_1/your_cloud_name/image/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+            featuredImage.value = data.secure_url; // The uploaded image URL
+          } catch (error) {
+            alert("Failed to upload image.");
+            console.error("Image upload error:", error);
+          }
+        } else {
+          alert("Please upload a valid image.");
+        }
+      };
+
 
     const uploadAdditionalImages = (event) => {
       const files = event.target.files;

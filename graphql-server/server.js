@@ -14,11 +14,23 @@ const typeDefs = gql`
     description: String!
     ingredients: [String!]!
     directions: [String!]!
+    creator: String!
+    likes: [String!]! 
+    bookmarks: [String!]! 
+    comments: [Comment!]! 
+  }
+
+  type Comment {
+    user: String!
+    text: String!
+    timestamp: String!
   }
 
   type Query {
     recipes: [Recipe!]!
     recipe(id: ID!): Recipe
+    recipesByCreator(creator: String!): [Recipe!]!
+    recipesByIngredients(ingredients: [String!]!): [Recipe!]! # New Query
   }
 
   type Mutation {
@@ -31,7 +43,13 @@ const typeDefs = gql`
       description: String!
       ingredients: [String!]!
       directions: [String!]!
+      creator: String!
     ): Recipe
+
+    likeRecipe(recipeId: ID!, userId: String!): Recipe # New Mutation
+    bookmarkRecipe(recipeId: ID!, userId: String!): Recipe # New Mutation
+    addComment(recipeId: ID!, userId: String!, text: String!): Recipe # New Mutation
+    rateRecipe(recipeId: ID!, userId: String!, rating: Float!): Recipe # New Mutation
   }
 `;
 
@@ -44,7 +62,7 @@ let recipes = [
     additional_images: ["/images/injera-step1.jpg", "/images/injera-step2.jpg"],
     category: "Breakfast",
     preparation_time: 30,
-    average_rating: 4.5,
+    average_rating: 3,
     ratings_count: 150,
     description: "A traditional Ethiopian flatbread made with teff flour.",
     ingredients: ["2 cups teff flour", "3 cups water", "1/2 tsp salt"],
@@ -54,14 +72,24 @@ let recipes = [
       "Add salt, stir, and pour batter onto a hot skillet.",
       "Cook until bubbles form and the edges lift easily.",
     ],
+    creator: "p3tr05",
+    likes: ["Tom23", "jame5"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "2",
-    title: "Doro Wat",
+    title: "Doro Wet",
     featured_image: "/images/Doro-Wet.jpg",
     additional_images: ["/images/dorowat-step1.jpg"],
     category: "Dinner",
-    preparation_time: 60,
+    preparation_time: 240,
     average_rating: 5.0,
     ratings_count: 200,
     description: "A spicy chicken stew, a national dish of Ethiopia.",
@@ -77,15 +105,25 @@ let recipes = [
       "Add berbere spice and chicken stock, stirring well.",
       "Simmer chicken in the pot until fully cooked.",
     ],
+    creator: "abebe",
+    likes: ["Tom23", "jame5", "abebe", "cha1a", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "3",
-    title: "Shiro Wat",
+    title: "Shiro Wet",
     featured_image: "/images/shiro.jpg",
     additional_images: ["/images/shiro-step1.jpg", "/images/shiro-step2.jpg"],
     category: "Lunch",
     preparation_time: 25,
-    average_rating: 4.7,
+    average_rating: 4,
     ratings_count: 120,
     description: "It is Ethiopians best vigan food.",
     ingredients: [
@@ -99,6 +137,16 @@ let recipes = [
       "Mix shiro powder with water and stir until smooth.",
       "Pour the mixture into the pan and cook on medium heat.",
       "Simmer until thickened, stirring occasionally.",
+    ],
+    creator: "w0rku",
+    likes: ["Tom23", "jame5", "abebe"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -123,6 +171,16 @@ let recipes = [
       "Combine the beef mixture with the melted butter.",
       "Serve with injera or bread.",
     ],
+    creator: "p3tr05",
+    likes: ["Tom23", "jame5", "abebe", "cha1a", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "5",
@@ -145,6 +203,16 @@ let recipes = [
       "Roll out the dough and cook on a skillet.",
       "Tear into pieces and mix with melted niter kibbeh.",
       "Drizzle with honey before serving.",
+    ],
+    creator: "abebe",
+    likes: ["Tom23", "jame5"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -169,6 +237,16 @@ let recipes = [
       "Add chilies and cook for an additional 5 minutes.",
       "Serve with injera.",
     ],
+    creator: "p3tr05",
+    likes: ["Tom23", "jame5", "abebe", "cha1a"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "8",
@@ -189,6 +267,16 @@ let recipes = [
       "Heat niter kibbeh in a pan.",
       "Add injera pieces and stir to coat evenly.",
       "Mix in the berbere sauce and cook until heated through.",
+    ],
+    creator: "w0rku",
+    likes: ["Tom23", "jame5", "abebe"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -213,6 +301,16 @@ let recipes = [
       "Fold into triangles and seal the edges.",
       "Deep fry until golden brown.",
     ],
+    creator: "abebe",
+    likes: ["Tom23", "jame5"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "10",
@@ -229,6 +327,16 @@ let recipes = [
       "Boil water in a pot.",
       "Add coffee grounds and simmer for 5 minutes.",
       "Pour into a cup and add sugar if desired.",
+    ],
+    creator: "p3tr05",
+    likes: ["Tom23", "jame5", "abebe", "cha1a", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -252,6 +360,16 @@ let recipes = [
       "Add chopped collard greens and cook until tender.",
       "Season with salt and serve.",
     ],
+    creator: "w0rku",
+    likes: ["Tom23", "jame5"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "12",
@@ -273,6 +391,16 @@ let recipes = [
       "Mix flour, water, salt, and berbere to form a dough.",
       "Roll into thin ropes and cut into small pieces.",
       "Fry or bake until crispy.",
+    ],
+    creator: "abebe",
+    likes: ["abebe", "cha1a", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -296,6 +424,16 @@ let recipes = [
       "Add berbere spice and mix well.",
       "Add beef and water, and simmer until tender.",
     ],
+    creator: "abebe",
+    likes: ["jame5", "abebe", "cha1a", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "14",
@@ -317,6 +455,16 @@ let recipes = [
       "Sauté onions in a pot until golden.",
       "Add lentils, berbere spice, and water.",
       "Cook on medium heat until thick and smooth.",
+    ],
+    creator: "p3tr05",
+    likes: ["Tom23", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -340,6 +488,16 @@ let recipes = [
       "Stir in honey and mustard until smooth.",
       "Serve as a dipping sauce.",
     ],
+    creator: "abebe",
+    likes: ["abebe", "cha1a", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "16",
@@ -361,6 +519,16 @@ let recipes = [
       "Sauté onions in a pan.",
       "Mix shiro powder with water and stir until smooth.",
       "Add the mixture to the pan with beef and cook until thickened.",
+    ],
+    creator: "w0rku",
+    likes: ["Tom23", "cha1a", "mekonin"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -385,6 +553,16 @@ let recipes = [
       "Add gesho leaves and sugar, and ferment for another day.",
       "Strain and serve.",
     ],
+    creator: "p3tr05",
+    likes: ["Tom23", "jame5", "abebe", "cha1a"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   },
   {
     id: "18",
@@ -407,26 +585,15 @@ let recipes = [
       "Cover and cook on low heat until tender.",
       "Season with salt and serve.",
     ],
-  },
-  {
-    id: "19",
-    title: "Chiko",
-    featured_image: "/images/chiko.jpg",
-    additional_images: ["/images/chiko-step1.jpg"],
-    category: "Snacks",
-    preparation_time: 15,
-    average_rating: 4.5,
-    ratings_count: 50,
-    description: "A barley conserved with butter, is traditional food of Oromia region in Ethiopia.",
-    ingredients: [
-      "1 cup barley flour",
-      "1/2 cup honey",
-      "1/4 cup niter kibbeh",
-    ],
-    directions: [
-      "Toast barley flour in a pan until golden brown.",
-      "Mix with honey and niter kibbeh to form a thick paste.",
-      "Serve as a snack or dessert.",
+    creator: "abebe",
+    likes: ["Tom23", "jame5", "abebe"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
     ],
   },
   {
@@ -450,6 +617,16 @@ let recipes = [
       "Add lentils, turmeric, and water.",
       "Cook on medium heat until soft and creamy.",
     ],
+    creator: "p3tr05",
+    likes: ["Tom23"], 
+    bookmarks: ["jame5"],
+    comments: [
+      {
+        user: "user2",
+        text: "Delicious! My family loved it.",
+        timestamp: "2024-04-05T10:00:00Z",
+      },
+    ],
   }
 ];
 
@@ -464,6 +641,12 @@ const resolvers = {
       }
       return recipe;
     },
+    recipesByCreator: (_, { creator }) =>
+      recipes.filter((recipe) => recipe.creator === creator),
+    recipesByIngredients: (_, { ingredients }) =>
+      recipes.filter((recipe) =>
+        ingredients.every((ingredient) => recipe.ingredients.includes(ingredient))
+      ),
   },
   Mutation: {
     addRecipe: (
@@ -477,6 +660,7 @@ const resolvers = {
         description,
         ingredients,
         directions,
+        creator,
       }
     ) => {
       if (!title || !featured_image || !ingredients.length || !directions.length) {
@@ -492,15 +676,72 @@ const resolvers = {
         additional_images: additional_images || [],
         category,
         preparation_time,
-        average_rating: 0, // Default average rating
-        ratings_count: 0, // Default ratings count
+        average_rating: 0,
+        ratings_count: 0,
         description,
         ingredients,
         directions,
+        creator,
+        likes: [],
+        bookmarks: [],
+        comments: [],
       };
 
       recipes.push(newRecipe);
       return newRecipe;
+    },
+    likeRecipe: (_, { recipeId, userId }) => {
+      const recipe = recipes.find((recipe) => recipe.id === recipeId);
+      if (!recipe) {
+        throw new Error(`Recipe with ID ${recipeId} not found.`);
+      }
+
+      if (!recipe.likes.includes(userId)) {
+        recipe.likes.push(userId);
+      }
+      return recipe;
+    },
+    bookmarkRecipe: (_, { recipeId, userId }) => {
+      const recipe = recipes.find((recipe) => recipe.id === recipeId);
+      if (!recipe) {
+        throw new Error(`Recipe with ID ${recipeId} not found.`);
+      }
+
+      if (!recipe.bookmarks.includes(userId)) {
+        recipe.bookmarks.push(userId);
+      }
+      return recipe;
+    },
+    addComment: (_, { recipeId, userId, text }) => {
+      const recipe = recipes.find((recipe) => recipe.id === recipeId);
+      if (!recipe) {
+        throw new Error(`Recipe with ID ${recipeId} not found.`);
+      }
+
+      const comment = {
+        user: userId,
+        text,
+        timestamp: new Date().toISOString(),
+      };
+      recipe.comments.push(comment);
+      return recipe;
+    },
+    rateRecipe: (_, { recipeId, userId, rating }) => {
+      const recipe = recipes.find((recipe) => recipe.id === recipeId);
+      if (!recipe) {
+        throw new Error(`Recipe with ID ${recipeId} not found.`);
+      }
+
+      if (rating < 1 || rating > 5) {
+        throw new Error("Rating must be between 1 and 5.");
+      }
+
+      recipe.average_rating =
+        (recipe.average_rating * recipe.ratings_count + rating) /
+        (recipe.ratings_count + 1);
+      recipe.ratings_count += 1;
+
+      return recipe;
     },
   },
 };

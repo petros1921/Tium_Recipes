@@ -14,6 +14,7 @@
     "@nuxtjs/tailwindcss": "^6.12.2",
     "@vue/apollo-composable": "^4.2.1",
     "autoprefixer": "^10.4.20",
+    "axios": "^1.7.9",
     "graphql": "^16.9.0",
     "nuxt": "^3.14.1592",
     "postcss": "^8.4.49",
