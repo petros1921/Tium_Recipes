@@ -60,7 +60,7 @@ let recipes = [
     title: "Injera",
     featured_image: "/images/injera.jpg",
     additional_images: ["/images/injera-step1.jpg", "/images/injera-step2.jpg"],
-    category: "Breakfast",
+    category: "Condiments",
     preparation_time: 30,
     average_rating: 3,
     ratings_count: 150,
